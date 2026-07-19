@@ -6,10 +6,20 @@ Doc auto   :  http://localhost:8000/docs
 
 Pour l'instant les films/notes viennent des fichiers ml-100k directement.
 Étape suivante (Jour 2 du plan) : remplacer ça par PostgreSQL.
+
+Affiches réelles : nécessite une clé TMDB gratuite (themoviedb.org/settings/api).
+Mets-la dans la variable d'environnement TMDB_API_KEY avant de lancer l'API :
+  export TMDB_API_KEY="ta_clé_ici"
+  python -m uvicorn api:app --reload
+Sans clé, l'API fonctionne quand même (poster_url sera vide, le frontend
+retombe automatiquement sur les cartes colorées par genre).
 """
-from typing import List
+import os
+import re
+from typing import List, Optional
 
 import pandas as pd
+import requests
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -78,6 +88,47 @@ MAIN_GENRES = [
 
 
 # ------------------------------------------------------------------
+# Affiches réelles via TMDB (optionnel — fonctionne sans clé, juste sans image)
+# ------------------------------------------------------------------
+TMDB_API_KEY = os.environ.get("TMDB_API_KEY", "")
+TMDB_SEARCH_URL = "https://api.themoviedb.org/3/search/movie"
+TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w342"
+
+_poster_cache: dict[int, Optional[str]] = {}
+
+
+def get_poster_url(item_id: int, title: str) -> Optional[str]:
+    """
+    Cherche l'affiche du film sur TMDB à partir de son titre (les titres
+    ml-100k sont au format "Toy Story (1995)" -> on extrait le titre et
+    l'année pour affiner la recherche). Résultat mis en cache en mémoire
+    pour éviter de re-questionner TMDB à chaque requête sur le même film.
+    """
+    if not TMDB_API_KEY:
+        return None
+    if item_id in _poster_cache:
+        return _poster_cache[item_id]
+
+    match = re.match(r"^(.*)\s\((\d{4})\)$", title.strip())
+    clean_title, year = (match.group(1), match.group(2)) if match else (title, None)
+
+    try:
+        params = {"api_key": TMDB_API_KEY, "query": clean_title}
+        if year:
+            params["year"] = year
+        resp = requests.get(TMDB_SEARCH_URL, params=params, timeout=3)
+        resp.raise_for_status()
+        results = resp.json().get("results", [])
+        poster_path = results[0]["poster_path"] if results else None
+        url = f"{TMDB_IMAGE_BASE}{poster_path}" if poster_path else None
+    except Exception:
+        url = None  # une affiche manquante ne doit jamais faire planter l'API
+
+    _poster_cache[item_id] = url
+    return url
+
+
+# ------------------------------------------------------------------
 # Schémas de réponse
 # ------------------------------------------------------------------
 class MovieRecommendation(BaseModel):
@@ -85,6 +136,7 @@ class MovieRecommendation(BaseModel):
     title: str
     predicted_rating: float
     genre: str
+    poster_url: Optional[str] = None
 
 
 class RecommendationResponse(BaseModel):
@@ -112,15 +164,16 @@ def recommend(user_id: int, n: int = 10):
 
     if is_new_user:
         top = popular_movies.head(n)
-        recs = [
-            MovieRecommendation(
+        recs = []
+        for row in top.itertuples():
+            title = movies.loc[movies.item_id == row.item_id, 'title'].values[0]
+            recs.append(MovieRecommendation(
                 item_id=int(row.item_id),
-                title=movies.loc[movies.item_id == row.item_id, 'title'].values[0],
+                title=title,
                 predicted_rating=round(row.avg_rating, 2),
                 genre=get_primary_genre(row.item_id),
-            )
-            for row in top.itertuples()
-        ]
+                poster_url=get_poster_url(row.item_id, title),
+            ))
         return RecommendationResponse(user_id=user_id, is_new_user=True, recommendations=recs)
 
     # Films déjà notés par l'utilisateur -> à exclure des recommandations
@@ -131,15 +184,16 @@ def recommend(user_id: int, n: int = 10):
     predictions.sort(key=lambda p: p.est, reverse=True)
     top_n = predictions[:n]
 
-    recs = [
-        MovieRecommendation(
+    recs = []
+    for p in top_n:
+        title = movies.loc[movies.item_id == p.iid, 'title'].values[0]
+        recs.append(MovieRecommendation(
             item_id=int(p.iid),
-            title=movies.loc[movies.item_id == p.iid, 'title'].values[0],
+            title=title,
             predicted_rating=round(p.est, 2),
             genre=get_primary_genre(p.iid),
-        )
-        for p in top_n
-    ]
+            poster_url=get_poster_url(p.iid, title),
+        ))
     return RecommendationResponse(user_id=user_id, is_new_user=False, recommendations=recs)
 
 
@@ -165,6 +219,7 @@ def movies_by_genre(genre: str, limit: int = 15):
             "item_id": int(r.item_id),
             "title": r.title,
             "avg_rating": round(r.avg_rating, 2) if pd.notna(r.avg_rating) else None,
+            "poster_url": get_poster_url(int(r.item_id), r.title),
         }
         for r in merged.itertuples()
     ]

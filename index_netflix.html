@@ -12,114 +12,139 @@
     padding-bottom: 60px;
   }
 
-  /* --- Header --- */
   header {
-    padding: 24px 50px;
+    padding: 20px 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+    flex-wrap: wrap;
+    gap: 12px;
+    background: #000;
+    border-bottom: 1px solid #1f1f1f;
     position: sticky;
     top: 0;
     z-index: 100;
   }
-  .logo { font-size: 1.8rem; font-weight: 800; color: #e50914; letter-spacing: -1px; }
-  .user-controls { display: flex; gap: 10px; align-items: center; }
-  .user-controls input {
-    width: 90px;
-    padding: 8px 10px;
-    border-radius: 4px;
-    border: none;
-    background: #333;
+  .logo { font-size: 1.6rem; font-weight: 800; color: #e50914; letter-spacing: -1px; }
+
+  .search-box {
+    flex: 1;
+    max-width: 400px;
+    min-width: 200px;
+    position: relative;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 9px 14px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background: #1a1a1a;
     color: #fff;
+    font-size: 14px;
+  }
+  .search-box input::placeholder { color: #777; }
+
+  .user-controls { display: flex; gap: 8px; align-items: center; }
+  .user-controls input {
+    width: 70px;
+    padding: 9px 10px;
+    border-radius: 4px;
+    border: 1px solid #333;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 13px;
   }
   .user-controls button {
     background: #e50914;
     color: #fff;
     border: none;
-    padding: 8px 16px;
+    padding: 9px 16px;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
   }
   .user-controls button:hover { background: #f6121d; }
 
-  /* --- Hero --- */
   .hero {
-    height: 55vh;
-    background: linear-gradient(180deg, rgba(10,10,10,0) 0%, rgba(10,10,10,1) 100%),
-                linear-gradient(120deg, #3b1c5a, #1a1a2e);
-    display: flex;
-    align-items: flex-end;
-    padding: 40px 50px;
+    background: linear-gradient(120deg, #3b1c5a, #1a1a2e);
+    padding: 32px 40px;
+    margin-bottom: 6px;
   }
-  .hero-content h1 { font-size: 2.4rem; margin-bottom: 10px; }
-  .hero-content p { color: #ccc; max-width: 500px; }
-  .cold-start-tag {
+  .hero h1 { font-size: 2rem; margin-bottom: 8px; }
+  .hero p { color: #ccc; max-width: 520px; font-size: 14px; }
+  .tag {
     display: inline-block;
-    background: #d4a017;
-    color: #111;
     padding: 4px 12px;
     border-radius: 4px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 700;
     margin-bottom: 10px;
   }
+  .tag-new { background: #d4a017; color: #111; }
+  .tag-known { background: #2ecc71; color: #0d3320; }
 
-  /* --- Rows --- */
-  .row { padding: 0 50px; margin-top: 34px; }
-  .row h2 { font-size: 1.3rem; margin-bottom: 12px; }
+  .row { padding: 0 40px; margin-top: 28px; }
+  .row h2 { font-size: 1.2rem; margin-bottom: 12px; }
   .row-scroll {
     display: flex;
     gap: 12px;
     overflow-x: auto;
     padding-bottom: 12px;
-    scrollbar-width: thin;
   }
   .row-scroll::-webkit-scrollbar { height: 6px; }
   .row-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
   .card {
     flex: 0 0 auto;
-    width: 170px;
+    width: 150px;
     cursor: pointer;
-    transition: transform 0.25s ease;
+    transition: transform 0.2s ease;
   }
-  .card:hover { transform: scale(1.08); z-index: 10; }
+  .card:hover { transform: scale(1.06); }
   .poster {
-    width: 170px;
-    height: 240px;
+    width: 150px;
+    height: 210px;
     border-radius: 6px;
-    display: flex;
-    align-items: flex-end;
-    padding: 12px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+  .poster-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 40%, transparent);
+    padding: 10px 8px 8px;
+  }
+  .poster-title {
     font-weight: 700;
-    font-size: 0.95rem;
-    line-height: 1.25;
+    font-size: 0.82rem;
+    line-height: 1.2;
     color: #fff;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   }
   .rating-tag {
     display: inline-block;
     margin-top: 6px;
-    background: rgba(0,0,0,0.5);
+    background: rgba(255,255,255,0.12);
     padding: 2px 8px;
     border-radius: 20px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+    color: #fff;
   }
 
-  #status { padding: 0 50px; color: #888; font-size: 0.9rem; }
-  #error { padding: 0 50px; color: #ff6b6b; }
+  #status { padding: 0 40px; color: #888; font-size: 0.9rem; margin-top: 10px; }
+  #error { padding: 0 40px; color: #ff6b6b; margin-top: 10px; }
+  #searchResults { padding: 0 40px; }
+  .search-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1f1f1f; font-size: 13px; }
 
-  /* --- Genre color palette (placeholder "posters") --- */
   .g-Action        { background: linear-gradient(135deg, #8e0e00, #1f1c18); }
-  .g-Comedy        { background: linear-gradient(135deg, #f7971e, #ffd200); color:#111; text-shadow:none; }
+  .g-Comedy        { background: linear-gradient(135deg, #f7971e, #ffd200); }
   .g-Drama         { background: linear-gradient(135deg, #232526, #414345); }
   .g-Romance       { background: linear-gradient(135deg, #ff5f6d, #ffc371); }
   .g-Sci-Fi        { background: linear-gradient(135deg, #16222a, #3a6073); }
   .g-Thriller      { background: linear-gradient(135deg, #000000, #434343); }
-  .g-Adventure     { background: linear-gradient(135deg, #11998e, #38ef7d); color:#111; text-shadow:none; }
+  .g-Adventure     { background: linear-gradient(135deg, #11998e, #38ef7d); }
   .g-Childrens     { background: linear-gradient(135deg, #56ccf2, #2f80ed); }
   .g-Horror        { background: linear-gradient(135deg, #200122, #6f0000); }
   .g-unknown, .g-Documentary, .g-Musical, .g-Western, .g-Mystery,
@@ -132,6 +157,9 @@
 
   <header>
     <div class="logo">MovieMatch</div>
+    <div class="search-box">
+      <input id="searchInput" placeholder="Chercher un film par titre..." />
+    </div>
     <div class="user-controls">
       <input id="userId" type="number" value="1" placeholder="User ID" />
       <button id="btnGo">Voir mes recos</button>
@@ -140,20 +168,18 @@
 
   <div id="status"></div>
   <div id="error"></div>
+  <div id="searchResults"></div>
 
   <section class="hero" id="hero" style="display:none;">
-    <div class="hero-content">
-      <div id="coldStartTag"></div>
-      <h1 id="heroTitle">Vos recommandations</h1>
-      <p id="heroSubtitle">Sélectionnées selon votre profil de goûts par notre modèle de collaborative filtering.</p>
-    </div>
+    <div id="coldStartTag"></div>
+    <h1 id="heroTitle">Vos recommandations</h1>
+    <p>Sélectionnées selon votre profil de goûts par notre modèle de collaborative filtering.</p>
   </section>
 
   <main id="rows"></main>
 
   <script>
     const $ = (id) => document.getElementById(id);
-    // API en dur : c'est une démo locale, pas la peine d'exposer ce champ à l'utilisateur
     const API_URL = 'http://localhost:8000';
 
     function genreClass(genre) {
@@ -161,15 +187,20 @@
       return `g-${safe}`;
     }
 
-    function renderCards(movies) {
-      return movies.map(m => `
+    function cardHTML(title, genre, rating, posterUrl) {
+      const safeTitle = title || 'Titre inconnu';
+      const safeRating = (rating !== undefined && rating !== null) ? rating : '—';
+      const bgImage = posterUrl ? `background-image:url('${posterUrl}'); background-size:cover; background-position:center;` : '';
+      return `
         <div class="card">
-          <div class="poster ${genreClass(m.genre)}">
-            ${m.title}
+          <div class="poster ${genreClass(genre)}" style="${bgImage}">
+            <div class="poster-overlay">
+              <div class="poster-title">${safeTitle}</div>
+              <div class="rating-tag">${safeRating} ★</div>
+            </div>
           </div>
-          <div class="rating-tag">${(m.predicted_rating || m.avg_rating || '—')} ★</div>
         </div>
-      `).join('');
+      `;
     }
 
     async function loadRecommendations() {
@@ -179,6 +210,8 @@
       const hero = $('hero');
       const coldStartTag = $('coldStartTag');
       const rows = $('rows');
+      $('searchResults').innerHTML = '';
+      $('searchInput').value = '';
 
       errorEl.textContent = '';
       statusEl.textContent = 'Chargement de vos recommandations...';
@@ -191,19 +224,22 @@
         const data = await res.json();
 
         statusEl.textContent = '';
-        hero.style.display = 'flex';
+        hero.style.display = 'block';
         coldStartTag.innerHTML = data.is_new_user
-          ? `<div class="cold-start-tag">NOUVEAU PROFIL — TENDANCES DU MOMENT</div>`
-          : `<div class="cold-start-tag" style="background:#2ecc71;">RECOMMANDÉ POUR VOUS</div>`;
+          ? `<div class="tag tag-new">NOUVEAU PROFIL — TENDANCES DU MOMENT</div>`
+          : `<div class="tag tag-known">RECOMMANDÉ POUR VOUS</div>`;
+
+        const cards = data.recommendations.map(m =>
+          cardHTML(m.title, m.genre, m.predicted_rating, m.poster_url)
+        ).join('');
 
         rows.insertAdjacentHTML('beforeend', `
           <div class="row">
             <h2>${data.is_new_user ? 'Populaire en ce moment' : 'Vos meilleures recommandations'}</h2>
-            <div class="row-scroll">${renderCards(data.recommendations)}</div>
+            <div class="row-scroll">${cards}</div>
           </div>
         `);
 
-        // Rangées additionnelles par genre pour un vrai effet "Netflix"
         await loadGenreRows();
       } catch (err) {
         statusEl.textContent = '';
@@ -223,12 +259,9 @@
           const data = await res.json();
           if (!data.movies.length) continue;
 
-          const cards = data.movies.map(m => `
-            <div class="card">
-              <div class="poster ${genreClass(genre)}">${m.title}</div>
-              <div class="rating-tag">${m.avg_rating ?? '—'} ★</div>
-            </div>
-          `).join('');
+          const cards = data.movies.map(m =>
+            cardHTML(m.title, genre, m.avg_rating, m.poster_url)
+          ).join('');
 
           rows.insertAdjacentHTML('beforeend', `
             <div class="row">
@@ -242,8 +275,35 @@
       }
     }
 
+    let searchTimeout;
+    $('searchInput').addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      const query = e.target.value.trim();
+      if (!query) {
+        $('searchResults').innerHTML = '';
+        return;
+      }
+      searchTimeout = setTimeout(() => searchMovies(query), 300);
+    });
+
+    async function searchMovies(query) {
+      const resultsEl = $('searchResults');
+      $('hero').style.display = 'none';
+      $('rows').innerHTML = '';
+      try {
+        const res = await fetch(`${API_URL}/movies?search=${encodeURIComponent(query)}&limit=15`);
+        if (!res.ok) throw new Error(`Erreur API (${res.status})`);
+        const data = await res.json();
+
+        resultsEl.innerHTML = data.movies.length
+          ? data.movies.map(m => `<div class="search-row"><span>${m.title}</span><span style="color:#888;">#${m.item_id}</span></div>`).join('')
+          : '<p style="color:#888; padding:12px 0;">Aucun résultat</p>';
+      } catch (err) {
+        resultsEl.innerHTML = `<p style="color:#ff6b6b;">Erreur : ${err.message}</p>`;
+      }
+    }
+
     $('btnGo').addEventListener('click', loadRecommendations);
-    // Chargement initial automatique pour user_id=1
     loadRecommendations();
   </script>
 

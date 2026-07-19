@@ -4,3 +4,4 @@ scikit-surprise
 fastapi
 uvicorn
 pydantic
+requests
