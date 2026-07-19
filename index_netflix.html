@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>MovieMatch</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: #0a0a0a;
+    color: #fff;
+    padding-bottom: 60px;
+  }
+
+  /* --- Header --- */
+  header {
+    padding: 24px 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo { font-size: 1.8rem; font-weight: 800; color: #e50914; letter-spacing: -1px; }
+  .user-controls { display: flex; gap: 10px; align-items: center; }
+  .user-controls input {
+    width: 90px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: none;
+    background: #333;
+    color: #fff;
+  }
+  .user-controls button {
+    background: #e50914;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .user-controls button:hover { background: #f6121d; }
+
+  /* --- Hero --- */
+  .hero {
+    height: 55vh;
+    background: linear-gradient(180deg, rgba(10,10,10,0) 0%, rgba(10,10,10,1) 100%),
+                linear-gradient(120deg, #3b1c5a, #1a1a2e);
+    display: flex;
+    align-items: flex-end;
+    padding: 40px 50px;
+  }
+  .hero-content h1 { font-size: 2.4rem; margin-bottom: 10px; }
+  .hero-content p { color: #ccc; max-width: 500px; }
+  .cold-start-tag {
+    display: inline-block;
+    background: #d4a017;
+    color: #111;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  /* --- Rows --- */
+  .row { padding: 0 50px; margin-top: 34px; }
+  .row h2 { font-size: 1.3rem; margin-bottom: 12px; }
+  .row-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    scrollbar-width: thin;
+  }
+  .row-scroll::-webkit-scrollbar { height: 6px; }
+  .row-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+  .card {
+    flex: 0 0 auto;
+    width: 170px;
+    cursor: pointer;
+    transition: transform 0.25s ease;
+  }
+  .card:hover { transform: scale(1.08); z-index: 10; }
+  .poster {
+    width: 170px;
+    height: 240px;
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-end;
+    padding: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.25;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .rating-tag {
+    display: inline-block;
+    margin-top: 6px;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+  }
+
+  #status { padding: 0 50px; color: #888; font-size: 0.9rem; }
+  #error { padding: 0 50px; color: #ff6b6b; }
+
+  /* --- Genre color palette (placeholder "posters") --- */
+  .g-Action        { background: linear-gradient(135deg, #8e0e00, #1f1c18); }
+  .g-Comedy        { background: linear-gradient(135deg, #f7971e, #ffd200); color:#111; text-shadow:none; }
+  .g-Drama         { background: linear-gradient(135deg, #232526, #414345); }
+  .g-Romance       { background: linear-gradient(135deg, #ff5f6d, #ffc371); }
+  .g-Sci-Fi        { background: linear-gradient(135deg, #16222a, #3a6073); }
+  .g-Thriller      { background: linear-gradient(135deg, #000000, #434343); }
+  .g-Adventure     { background: linear-gradient(135deg, #11998e, #38ef7d); color:#111; text-shadow:none; }
+  .g-Childrens     { background: linear-gradient(135deg, #56ccf2, #2f80ed); }
+  .g-Horror        { background: linear-gradient(135deg, #200122, #6f0000); }
+  .g-unknown, .g-Documentary, .g-Musical, .g-Western, .g-Mystery,
+  .g-Crime, .g-War, .g-Fantasy, .g-Film-Noir, .g-Animation {
+    background: linear-gradient(135deg, #333, #111);
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">MovieMatch</div>
+    <div class="user-controls">
+      <input id="userId" type="number" value="1" placeholder="User ID" />
+      <button id="btnGo">Voir mes recos</button>
+    </div>
+  </header>
+
+  <div id="status"></div>
+  <div id="error"></div>
+
+  <section class="hero" id="hero" style="display:none;">
+    <div class="hero-content">
+      <div id="coldStartTag"></div>
+      <h1 id="heroTitle">Vos recommandations</h1>
+      <p id="heroSubtitle">Sélectionnées selon votre profil de goûts par notre modèle de collaborative filtering.</p>
+    </div>
+  </section>
+
+  <main id="rows"></main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    // API en dur : c'est une démo locale, pas la peine d'exposer ce champ à l'utilisateur
+    const API_URL = 'http://localhost:8000';
+
+    function genreClass(genre) {
+      const safe = (genre || 'unknown').replace(/'/g, '');
+      return `g-${safe}`;
+    }
+
+    function renderCards(movies) {
+      return movies.map(m => `
+        <div class="card">
+          <div class="poster ${genreClass(m.genre)}">
+            ${m.title}
+          </div>
+          <div class="rating-tag">${(m.predicted_rating || m.avg_rating || '—')} ★</div>
+        </div>
+      `).join('');
+    }
+
+    async function loadRecommendations() {
+      const userId = $('userId').value.trim();
+      const statusEl = $('status');
+      const errorEl = $('error');
+      const hero = $('hero');
+      const coldStartTag = $('coldStartTag');
+      const rows = $('rows');
+
+      errorEl.textContent = '';
+      statusEl.textContent = 'Chargement de vos recommandations...';
+      hero.style.display = 'none';
+      rows.innerHTML = '';
+
+      try {
+        const res = await fetch(`${API_URL}/recommend/${userId}?n=12`);
+        if (!res.ok) throw new Error(`Erreur API (${res.status})`);
+        const data = await res.json();
+
+        statusEl.textContent = '';
+        hero.style.display = 'flex';
+        coldStartTag.innerHTML = data.is_new_user
+          ? `<div class="cold-start-tag">NOUVEAU PROFIL — TENDANCES DU MOMENT</div>`
+          : `<div class="cold-start-tag" style="background:#2ecc71;">RECOMMANDÉ POUR VOUS</div>`;
+
+        rows.insertAdjacentHTML('beforeend', `
+          <div class="row">
+            <h2>${data.is_new_user ? 'Populaire en ce moment' : 'Vos meilleures recommandations'}</h2>
+            <div class="row-scroll">${renderCards(data.recommendations)}</div>
+          </div>
+        `);
+
+        // Rangées additionnelles par genre pour un vrai effet "Netflix"
+        await loadGenreRows();
+      } catch (err) {
+        statusEl.textContent = '';
+        errorEl.textContent = `Erreur : ${err.message}. Vérifie que l'API tourne (uvicorn api:app --reload).`;
+      }
+    }
+
+    async function loadGenreRows() {
+      const rows = $('rows');
+      const genresRes = await fetch(`${API_URL}/genres`);
+      const { genres } = await genresRes.json();
+
+      for (const genre of genres) {
+        try {
+          const res = await fetch(`${API_URL}/movies/by_genre/${encodeURIComponent(genre)}?limit=12`);
+          if (!res.ok) continue;
+          const data = await res.json();
+          if (!data.movies.length) continue;
+
+          const cards = data.movies.map(m => `
+            <div class="card">
+              <div class="poster ${genreClass(genre)}">${m.title}</div>
+              <div class="rating-tag">${m.avg_rating ?? '—'} ★</div>
+            </div>
+          `).join('');
+
+          rows.insertAdjacentHTML('beforeend', `
+            <div class="row">
+              <h2>${genre}</h2>
+              <div class="row-scroll">${cards}</div>
+            </div>
+          `);
+        } catch (e) {
+          console.warn(`Genre ${genre} non chargé`, e);
+        }
+      }
+    }
+
+    $('btnGo').addEventListener('click', loadRecommendations);
+    // Chargement initial automatique pour user_id=1
+    loadRecommendations();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+model.pkl
+rapport_modele.txt
+ml-100k.zip
+.DS_Store
