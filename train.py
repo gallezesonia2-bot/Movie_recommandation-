@@ -12,10 +12,10 @@ Temps attendu : quelques minutes, pas des heures.
 Sortie : model.pkl + rapport_modele.txt
 """
 from collections import defaultdict
-
 import pandas as pd
 from surprise import Dataset, Reader, SVD, dump, accuracy
 from surprise.model_selection import KFold, GridSearchCV
+
 
 
 # ------------------------------------------------------------------
@@ -27,10 +27,12 @@ ratings = pd.read_csv('ml-100k/u.data', sep='\t', names=columns)
 reader = Reader(rating_scale=(1, 5))
 data = Dataset.load_from_df(ratings[['user_id', 'item_id', 'rating']], reader)
 
+
 report_lines = []
 def log(msg=""):
     print(msg)
     report_lines.append(str(msg))
+
 
 
 # ------------------------------------------------------------------
